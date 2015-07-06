@@ -1,12 +1,29 @@
+#!/usr/bin/python
+################################################################################
 import datetime
 import numpy as np
 import pandas
 import pylab as pl
 import seaborn as sns
 from collections import OrderedDict
-
+################################################################################
 
 ################################################################################
+'''
+Kaggle competition - San Fransisco Crime.
+
+Make some plots.
+
+'''
+################################################################################
+
+__author__ = [
+    'Sam Hall',
+    'Robyn Lucas',
+]
+
+################################################################################
+# Plotting class
 
 class Plot2D(object):
     def __init__(self):
@@ -31,8 +48,6 @@ class Plot2D(object):
         pl.close(fig)
         return
 
-    def plot_per_year(self, df):
-        pass
 
     def plot(self, df, name=None, size=10000):
         if isinstance(df, pandas.DataFrame):
@@ -60,15 +75,7 @@ class Plot2D(object):
         return
 
 ################################################################################
-
-
-def get_data():
-    data = pandas.read_csv('data.csv', parse_dates=['Dates'],
-                           infer_datetime_format=True)
-    data.Time = data.Time = data.Dates.map(lambda x: x.time())
-    data = data[(data.X<-121) & (data.Y<40)]
-    data = data.dropna()
-    return data
+# Some functions
 
 
 def data2dict(df, cat_name, prefix=''):
@@ -110,26 +117,10 @@ def sort_categories_by_frequency(cats):
     return out
 
 
-#def plotter(cats, xname, yname, n=5):
-    #if not isinstance(cats, OrderedDict):
-        #cats = sort_categories_by_frequency(cats)
-    #fig = pl.figure()
-    #for i (k, v) in enumerate(cats.iteritems()):
-        #if i % n == 0:
-            #pl.close(fig)
-            #fig = pl.figure()
-        #pl.scatter(v[xname], v[yname], label=k)
-        #if i % n == n-1:
-            #pl.legend()
-            #fig.saveas('test.png')
-    ##if i % n != n-1:
-        ##pl.legend()
-        ##fig.saveas('test.png')
-    #pl.close(fig)
-
+################################################################################
 
 if __name__ == "__main__":
-    df = get_data()
+    df = utils.get_data('data.csv', drop_data=True)
     cats = data2dict(df, 'Category')
     pds = data2dict(df, 'PdDistrict')
     plotter = Plot2D()
@@ -138,4 +129,5 @@ if __name__ == "__main__":
     plotter.plot_scatter(pds, 'PDs')
     pds_theft = {k:v[v.Category=='VEHICLE THEFT'] for k, v in pds.iteritems()}
     plotter.plot_scatter(pds_theft, 'PDs_VehicleTheft')
+
 

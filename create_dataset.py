@@ -1,23 +1,38 @@
+#!/usr/bin/python
+################################################################################
+from utils import *
+import datetime
+import pandas
 import pylab as pl
 import re
-import datetime
-import numpy as np
-import pandas as pd
-import sklearn
-from sklearn.ensemble import AdaBoostClassifier
-import scipy
-import zipfile
-import os
-import astral
-from collections import OrderedDict
+################################################################################
+
+'''
+Kaggle competition - San Fransisco Crime.
+In an attempt to do this a bit more properly...
+
+This will make our dataset.
+data/train.csv -> data.csv
+
+'''
 
 
-def time2mins(t):
-    return 60*t.hour + t.minute
+################################################################################
+
+__author__ = [
+    'Sam Hall',
+    'Robyn Lucas',
+]
+
+################################################################################
+# Class
 
 
-class Names2Int(object):
-    def __init__(self):
+class DataFormat(object):
+    '''Class to take initial dataset and format it as required.
+    '''
+    def __init__(self, verbose=False):
+        self.verbose = verbose
         self.day2int = dict(zip(
             ['Monday', 'Tuesday', 'Wednesday', 'Thursday'
              'Friday', 'Saturday', 'Sunday'], range(7)
@@ -44,22 +59,28 @@ class Names2Int(object):
             'DISTRICT ATTORNEY REFUSES TO PROSECUTE',
             'PROSECUTED BY OUTSIDE AGENCY', 'PROSECUTED FOR LESSER OFFENSE'
         ]
-        districts = ['NORTHERN', 'PARK', 'INGLESIDE', 'BAYVIEW', 'RICHMOND', 'CENTRAL',
-                     'TARAVAL', 'TENDERLOIN', 'MISSION', 'SOUTHERN']
+        districts = ['NORTHERN', 'PARK', 'INGLESIDE', 'BAYVIEW', 'RICHMOND',
+                     'CENTRAL', 'TARAVAL', 'TENDERLOIN', 'MISSION', 'SOUTHERN']
         self.category2int = dict(zip(cats, range(len(cats))))
         self.pddistrict2int = dict(zip(districts, range(len(districts))))
         self.resolution2int = dict(zip(resolutions, range(len(resolutions))))
+        return
 
     def add_columns_enumerate(self, df):
+        '''Adding enumerations to DataFile'''
+        if self.verbose: print __doc__
         df['CategoryInt'] = df.Category.map(self.category2int)
         df['DayOfWeekInt'] = df.DayOfWeek.map(self.day2int)
         df['PdDistrictInt'] = df.PdDistrict.map(self.pddistrict2int)
+        re_string = ' ST| AV| BL| WY '
         df['AddressCode'] = df.Address.map(lambda x: [
-            y.strip() for y in re.sub(' ST| AV| BL| WY| Block of', '', x).split('/')
+            y.strip() for y in re.sub(re_string, '', x).replace('Block of ', '').split('/')
         ])
         return
 
     def add_columns_resolution(self, df):
+        '''Adding enumerations of resolutions to pandas.DataFile'''
+        if self.verbose: print __doc__
         df['IsJuvenile'] = df.Resolution.str.contains('JUVENILE')
         df['IsBooked'] = df.Resolution.str.contains('BOOKED')
         df['IsCited'] = df.Resolution.str.contains('CITED')
@@ -75,29 +96,29 @@ class Names2Int(object):
         return
 
     def add_columns_time(self, df):
-        # A single location object should suffice, average long-lat and elevation is 16m (wiki)
+        '''Add columns about the time.
+        Astral class uses average long=lat and elevation is 16m (wiki).'''
+        import astral
+        if self.verbose: print 'Adding enumerations of resolutions to DataFile'
         location = astral.Location(('SF', 'America', df.Y.mean(), df.X.mean(),
                                     'America/Los_Angeles', 16))
-        #df['Date'] = df.Dates.map(
-            #lambda d :
-            #datetime.datetime.strptime(d, '%Y-%m-%d %H:%M:%S'),
-        #)
-        # Time in minutes is better
-        df['Time'] = df.Dates.map(lambda d : time2mins(d))
+        # Time in minutes is better for playing with
+        df['Minutes'] = df.Dates.map(lambda d : time2minutes(d))
         df['Month'] = df.Dates.map(lambda d : d.month)
         df['Year'] = df.Dates.map(lambda d : d.year)
-        sunset = df.Dates.map(lambda d : time2mins(location.sunset(d)))
-        sunrise = df.Dates.map(lambda d : time2mins(location.sunrise(d)))
-        dusk = df.Dates.map(lambda d : time2mins(location.dusk(d)))
-        dawn = df.Dates.map(lambda d : time2mins(location.dawn(d)))
+        sunset = df.Dates.map(lambda d : time2minutes(location.sunset(d)))
+        sunrise = df.Dates.map(lambda d : time2minutes(location.sunrise(d)))
+        dusk = df.Dates.map(lambda d : time2minutes(location.dusk(d)))
+        dawn = df.Dates.map(lambda d : time2minutes(location.dawn(d)))
         # 0 : Day, 1 : Dusk, 2 : Dark, 3 : Dawn
         df['Darkness'] = \
-                ((df.Time<dusk) & (df.Time>sunset)).astype(int) * 1 + \
-                ((df.Time<dawn) | (df.Time>dusk)).astype(int) * 2 + \
-                ((df.Time>dawn) & (df.Time<sunrise)).astype(int) * 3
+                ((df.Minutes<dusk) & (df.Minutes>sunset)).astype(int) * 1 + \
+                ((df.Minutes<dawn) | (df.Minutes>dusk)).astype(int) * 2 + \
+                ((df.Minutes>dawn) & (df.Minutes<sunrise)).astype(int) * 3
         return
 
     def details(self, df):
+        '''Unused'''
         replacements = '()[].,\'\"/-$0123456789'
         replacements = dict(zip(replacements, ' '*len(replacements)))
         all_details = df.Descript.unique()
@@ -106,42 +127,15 @@ class Names2Int(object):
         all_words = pandas.Series([w for w in all_words.split(' ') if len(w)>3]).unique()
         return all_words
 
-
-def get_train_data():
-    pathname = 'data'
-    data = pd.read_csv(os.path.join(pathname, 'train.csv'),
-                       parse_dates=['Dates'],
-                       infer_datetime_format=True)
-    return data
+################################################################################
 
 
-def train(data):
-    '''Does not work.
-    At all.
-    Yet.'''
-    classifier = AdaBoostClassifier()
-    print 'Train'
-    classifier.fit(data[[
-        'DayOfWeekInt'
-    ]], data.Category)
-    return classifier
-
-
-data = get_train_data()
-c = Names2Int()
-c.add_columns_enumerate(data)
-c.add_columns_resolution(data)
-c.add_columns_time(data)
-data.to_csv('data.csv', index=False)
-#words = c.details(data)
-#print data.head()
-
-
-#train(data)
-
-
-
-#if __name__ == "__main__":
-    #train(data)
+if __name__ == "__main__":
+    data = get_data('data/train_1e4.csv')
+    formatter = DataFormat()
+    formatter.add_columns_enumerate(data)
+    formatter.add_columns_resolution(data)
+    formatter.add_columns_time(data)
+    write_data(data, 'data.csv')
 
 
