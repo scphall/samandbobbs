@@ -6,6 +6,8 @@ import seaborn as sns
 from collections import OrderedDict
 
 
+################################################################################
+
 class Plot2D(object):
     def __init__(self):
         map_loc = "data/sf_map_copyright_openstreetmap_contributors.txt"
@@ -57,9 +59,7 @@ class Plot2D(object):
         pl.close(fig)
         return
 
-#def plot_pane(cat):
-    #g = sns.FacetGrid(train, col="Category", col_wrap=6, size=5, aspect=1/asp)
-    #return
+################################################################################
 
 
 def get_data():
@@ -73,7 +73,9 @@ def get_data():
 
 def data2dict(df, cat_name, prefix=''):
     category_names = df[cat_name].unique()
-    cats = {prefix+k:df[df[cat_name]==k].reset_index(drop=True) for k in category_names}
+    cats = {
+        prefix+k:df[df[cat_name]==k].reset_index(drop=True) for k in category_names
+    }
     return cats
 
 
@@ -126,7 +128,6 @@ def sort_categories_by_frequency(cats):
     #pl.close(fig)
 
 
-
 if __name__ == "__main__":
     df = get_data()
     cats = data2dict(df, 'Category')
@@ -137,7 +138,4 @@ if __name__ == "__main__":
     plotter.plot_scatter(pds, 'PDs')
     pds_theft = {k:v[v.Category=='VEHICLE THEFT'] for k, v in pds.iteritems()}
     plotter.plot_scatter(pds_theft, 'PDs_VehicleTheft')
-
-
-
 
