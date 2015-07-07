@@ -1,28 +1,29 @@
 #!/usr/bin/python
-################################################################################
+###############################################################################
+from collections import OrderedDict
 import datetime
 import numpy as np
 import pandas
 import pylab as pl
+import sfc
 import seaborn as sns
-from collections import OrderedDict
-################################################################################
+###############################################################################
 
-################################################################################
+###############################################################################
 '''
 Kaggle competition - San Fransisco Crime.
 
 Make some plots.
 
 '''
-################################################################################
+###############################################################################
 
 __author__ = [
     'Sam Hall',
     'Robyn Lucas',
 ]
 
-################################################################################
+###############################################################################
 # Plotting class
 
 class Plot2D(object):
@@ -33,13 +34,17 @@ class Plot2D(object):
         self.lon_lat_box = (-122.5247, -122.3366, 37.699, 37.8299)
         self.clipsize = [[-122.5247, -122.3366], [37.699, 37.8299]]
 
-    def _plot(self, df, name, size=10000):
+    def _plot(self, df, name):
         fig = pl.figure(figsize=(10, 10*self.aspect))
-        df_small = df[:size]
-        ax = sns.kdeplot(df_small.X, df_small.Y, clip=self.clipsize,
-                         aspect=1/self.aspect,
-                         shade=False, shade_lowest=False,
-                         alpha=0.7, cmap='Blues')
+        try:
+            ax = sns.kdeplot(df.X, df.Y, clip=self.clipsize,
+                             aspect=1/self.aspect,
+                             shade=False, shade_lowest=False,
+                             alpha=0.7, cmap='Blues')
+        except ValueError:
+            print 'Problem with {}.'.format(name),
+            print 'Perhaps the number of entries is too small.'
+            return
         ax.imshow(self.mapdata, cmap=pl.get_cmap('gray'),
                   extent=self.lon_lat_box, aspect=self.aspect)
         pl.savefig(
@@ -49,12 +54,12 @@ class Plot2D(object):
         return
 
 
-    def plot(self, df, name=None, size=10000):
+    def plot(self, df, name=None):
         if isinstance(df, pandas.DataFrame):
             self._plot(df, name, size)
         elif isinstance(df, dict):
             for k, v in df.iteritems():
-                self._plot(v, k, size)
+                self._plot(v, k)
         else:
             raise TypeError('Cannot plot type {}'.format(type(df)))
         return
@@ -74,16 +79,8 @@ class Plot2D(object):
         pl.close(fig)
         return
 
-################################################################################
+###############################################################################
 # Some functions
-
-
-def data2dict(df, cat_name, prefix=''):
-    category_names = df[cat_name].unique()
-    cats = {
-        prefix+k:df[df[cat_name]==k].reset_index(drop=True) for k in category_names
-    }
-    return cats
 
 
 def get_time_df(cats, bins=24):
@@ -117,17 +114,16 @@ def sort_categories_by_frequency(cats):
     return out
 
 
-################################################################################
+###############################################################################
 
 if __name__ == "__main__":
-    df = utils.get_data('data.csv', drop_data=True)
-    cats = data2dict(df, 'Category')
-    pds = data2dict(df, 'PdDistrict')
+    df = sfc.get_data('data/trim_1e4.csv', drop_data=True)
+    cats = sfc.data2dict(df, 'Category')
+    pds = sfc.data2dict(df, 'PdDistrict')
     plotter = Plot2D()
     plotter.plot(cats)
-    plotter.plot(pds)
     plotter.plot_scatter(pds, 'PDs')
     pds_theft = {k:v[v.Category=='VEHICLE THEFT'] for k, v in pds.iteritems()}
     plotter.plot_scatter(pds_theft, 'PDs_VehicleTheft')
 
-
+###############################################################################
