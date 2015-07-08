@@ -76,13 +76,13 @@ class DataFormat(object):
         df['CategoryInt'] = df.Category.map(self.category2int)
         df['DayOfWeekInt'] = df.DayOfWeek.map(self.day2int)
         df['PdDistrictInt'] = df.PdDistrict.map(self.pddistrict2int)
-        re_string = ' ST| AV| BL| WY'
-        df['AddressCode'] = df.Address.map(
-            lambda x: [
-                y.strip() for y in
-                re.sub(re_string, '', x).replace('Block of ', 'BO').split('/')
-            ]
-        )
+        #re_string = ' ST| AV| BL| WY'
+        #df['AddressCode'] = df.Address.map(
+            #lambda x: [
+                #y.strip() for y in
+                #re.sub(re_string, '', x).replace('Block of ', 'BO').split('/')
+            #]
+        #)
         return
 
     def add_columns_resolution(self, df):
@@ -118,11 +118,16 @@ class DataFormat(object):
         sunrise = df.Dates.map(lambda d: time2minutes(location.sunrise(d)))
         dusk = df.Dates.map(lambda d: time2minutes(location.dusk(d)))
         dawn = df.Dates.map(lambda d: time2minutes(location.dawn(d)))
+        df['Moon'] = df.Dates.map(lambda d: location.moon_phase(d))
         # 0 : Day, 1 : Dusk, 2 : Dark, 3 : Dawn
         df['Darkness'] = \
             ((df.Minutes < dusk) & (df.Minutes > sunset)).astype(int) + \
             ((df.Minutes < dawn) | (df.Minutes > dusk)).astype(int) * 2 + \
             ((df.Minutes > dawn) & (df.Minutes < sunrise)).astype(int) * 3
+        df['Sunset'] = sunset
+        df['Sunrise'] = sunrise
+        df['Dusk'] = dusk
+        df['Dawn'] = dawn
         return
 
     def details(self, df):

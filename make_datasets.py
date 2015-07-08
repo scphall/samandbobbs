@@ -19,7 +19,7 @@ def make_dataset(input, output, comment='', verbose=False, size=None):
             input = input2
         data = sfc.get_data(input)
     elif isinstance(input, pandas.DataFrame):
-        data = input
+        data = copy.deepcopy(input)
     else:
         raise IOError('Cannot deal with a {}'.format(type(input)))
     # Shrink to random records
@@ -39,7 +39,7 @@ def trim_categories(df):
         'ROBBERY', 'SEX OFFENSES FORCIBLE', 'STOLEN PROPERTY', 'SUICIDE',
         'VANDALISM', 'VEHICLE THEFT',
     ]
-    return copy.deepcopy(df[df.Category.isin(cats)])
+    return copy.deepcopy(df[df.Category.isin(cats)]).reset_index()
 
 ###############################################################################
 
@@ -50,12 +50,18 @@ if __name__ == "__main__":
     trimmed = trim_categories(train)
     # Formatting
     formatter = sfc.DataFormat()
-    formatter.add_columns_enumerate(trimmed)
+    #formatter.add_columns_enumerate(trimmed)
     formatter.add_columns_resolution(trimmed) # Almost certainly not used
     formatter.add_columns_time(trimmed)
     # Make the actual datasets
     make_dataset(trimmed, 'data/trim_1e4.csv', size=10000,
                  comment='Random set of training data. ' \
                  'Selected Categories, 1e4 records')
+    make_dataset(trimmed, 'data/trim_1e5.csv', size=100000,
+                 comment='Random set of training data. ' \
+                 'Selected Categories, 1e5 records')
+    make_dataset(trimmed, 'data/trim_1e6.csv', size=1000000,
+                 comment='Random set of training data. ' \
+                 'Selected Categories, 1e6 records')
 
 ###############################################################################
