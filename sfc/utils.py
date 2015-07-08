@@ -35,7 +35,7 @@ def get_data(filename, drop_data=False):
         parse_dates=['Dates'], infer_datetime_format=True,
         comment='#',
     )
-    data.Time = data.Dates.map(lambda x: x.time())
+    #data.Time = data.Dates.map(lambda x: x.time())
     if drop_data:
         data = data[(data.X < -121) & (data.Y < 40)]
         data = data.dropna()
