@@ -18,3 +18,11 @@ from utils import *
 from dataformatter import DataFormat
 ###############################################################################
 _SEED = 31966
+_VERBOSE = 0
+
+
+def msg(level, message):
+    global _VERBOSE
+    if level >= _VERBOSE:
+        print message
+    return

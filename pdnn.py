@@ -1,4 +1,5 @@
 from matplotlib.colors import ListedColormap
+from sklearn.externals import joblib # Apparently better for this than pickle
 from sklearn import datasets
 from sklearn import neighbors
 import copy
@@ -13,7 +14,8 @@ class Juristictions(object):
     def __init__(self):
         self.n_neighbors = 20
         self.step = 0.001
-        self.weights = 'uniform' # 'distance'
+        self.weights = 'distance'
+        self.weights = 'uniform'
         self.clf = None
         self.filename = 'pkls/knn_pds.pkl'
         return
@@ -44,31 +46,28 @@ class Juristictions(object):
         return
 
     def save(self, filename=None):
-        if self.clf is None:
-            raise ValueError('No KNN object loaded for saving')
         if filename is None:
             filename = self.filename
-        with open(filename, 'w') as f:
-            pickle.dump(self.clf, f)
+        joblib.dump(self.clf, filename)
         return
 
     def load(self, filename=None):
         if filename is None:
             filename = self.filename
-        with open(filename, 'r') as f:
-            self.clf = pickle.load(f)
+        self.clf = joblib.load(filename)
         return
 
-    def outside_knn_juristictions(self, data):
+    def outside_juristiction(self, data):
+        data = copy.deepcopy(data)
         xynames = ['X', 'Y']
-        newX = copy.deepcopy(data)
-        newX['Prob'] = pandas.Series(
-            [max(x) for x in self.clf.predict_proba(newX[xynames])]
+        data['Prediction'] = pandas.Series(self.clf.predict(data[xynames]))
+        data = data[data.PdDistrictInt != data.Prediction]
+        data = data.reset_index(drop=True)
+        data['Prob'] = pandas.Series(
+            [max(x) for x in self.clf.predict_proba(data[xynames])]
         )
-        newX['Prediction'] = pandas.Series(self.clf.predict(newX[xynames]))
-        newX['Actual'] = data['PdDistrictInt']
-        newX = newX[newX.Actual != newX.Prediction]
-        newX = newX[newX.Prob > 0.9]
+        data = data[data.Prob > 0.95].reset_index(drop=True)
+        fig = pl.figure()
         x_min, x_max = data.X.min() - 0.01, data.X.max() + 0.01
         y_min, y_max = data.Y.min() - 0.01, data.Y.max() + 0.01
         xx, yy = np.meshgrid(
@@ -77,22 +76,51 @@ class Juristictions(object):
         )
         Z = self.clf.predict(np.c_[xx.ravel(), yy.ravel()])
         Z = Z.reshape(xx.shape)
-        fig = pl.figure()
         pl.xlim(xx.min(), xx.max())
         pl.ylim(yy.min(), yy.max())
-        pl.pcolormesh(xx, yy, Z, cmap='jet', alpha=0.1)
-        pl.scatter(newX.X, newX.Y, c=newX.Actual, cmap='jet', alpha=0.5)
+        pl.pcolormesh(xx, yy, Z, cmap='jet', alpha=1.0)
+        pl.scatter(data.X, data.Y, c=data.PdDistrictInt, cmap='jet', alpha=1.0)
         pl.savefig('plots/knn_PD_2.png')
         pl.close(fig)
-        return newX.reset_index()
+        return data
+
+    def plot(self, filename):
+        indices = ['Category']
+        data = sfc.get_data(filename)[indices]
+        data.Category = data.Category.map(lambda x: x.capitalize())
+        groups = data.groupby('Category')
+        fig = pl.figure()
+        groups.size().plot(kind='bar')
+        fig.subplots_adjust(bottom=0.35)
+        pl.savefig('plots/categories_outside_pd.pdf)
+        pl.show()
+        return
+
+
+###############################################################################
+
+
+def main(load=True):
+    indices = ['X', 'Y', 'PdDistrictInt']
+    train = sfc.get_data('data/trim_1e4.csv', drop_data=True)[indices]
+    all = sfc.get_data('data/all.csv', drop_data=True)
+    knn = Juristictions()
+    if load:
+        knn.load()
+    else:
+        knn.train(train)
+        knn.save()
+    data = knn.outside_juristiction(all)
+    sfc.write_data(data, 'data/outside_pd.csv', comment='Outside juristiction')
+    return
+
+
+###############################################################################
 
 
 if __name__ == "__main__":
-    data = sfc.get_data('data/trim_1e6.csv', drop_data=True)
+    main(False)
     knn = Juristictions()
-    #knn.train(data)
-    #knn.save()
-    knn.load()
-    outside_data = knn.outside_knn_juristictions(data)
-    sfc.write_data(outside_data, 'data/outside_pd.csv',
-                   comment='from trim_1e6')
+    knn.plot('data/outside_pd.csv')
+
+###############################################################################

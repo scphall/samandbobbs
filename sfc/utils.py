@@ -39,7 +39,7 @@ def get_data(filename, drop_data=False):
     if drop_data:
         data = data[(data.X < -121) & (data.Y < 40)]
         data = data.dropna()
-        data = data.reset_index()
+        data = data.reset_index(drop=True)
     return data
 
 

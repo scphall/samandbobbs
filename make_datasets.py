@@ -26,7 +26,7 @@ def make_dataset(input, output, comment='', verbose=False, size=None):
     if size is not None and size < len(data):
         random.seed(sfc._SEED)
         data = data.ix[sorted(random.sample(xrange(len(data)), size))]
-        data.reset_index()
+        data.reset_index(drop=True)
     sfc.write_data(data, output, comment=comment)
     return
 
@@ -39,13 +39,12 @@ def trim_categories(df):
         'ROBBERY', 'SEX OFFENSES FORCIBLE', 'STOLEN PROPERTY', 'SUICIDE',
         'VANDALISM', 'VEHICLE THEFT',
     ]
-    return copy.deepcopy(df[df.Category.isin(cats)]).reset_index()
+    return copy.deepcopy(df[df.Category.isin(cats)]).reset_index(drop=True)
 
 ###############################################################################
 
 
-
-if __name__ == "__main__":
+def make_trimmed():
     train = sfc.get_data('data/train.csv')
     trimmed = trim_categories(train)
     # Formatting
@@ -63,5 +62,24 @@ if __name__ == "__main__":
     make_dataset(trimmed, 'data/trim_1e6.csv', size=1000000,
                  comment='Random set of training data. ' \
                  'Selected Categories, 1e6 records')
+    make_dataset(trimmed, 'data/trim.csv',
+                 comment='Random set of training data. ' \
+                 'Selected Categories, all records')
+    return
 
+
+def make_full():
+    train = sfc.get_data('data/train.csv')
+    # Formatting
+    formatter = sfc.DataFormat()
+    formatter.add_columns_enumerate(train)
+    formatter.add_columns_time(train)
+    make_dataset(train, 'data/all.csv',
+                 comment='All training data')
+    return
+
+
+if __name__ == "__main__":
+    make_trimmed()
+    #make_full()
 ###############################################################################
