@@ -84,16 +84,22 @@ class Juristictions(object):
         pl.close(fig)
         return data
 
-    def plot(self, filename):
+    def plot(self, *args):
         indices = ['Category']
-        data = sfc.get_data(filename)[indices]
-        data.Category = data.Category.map(lambda x: x.capitalize())
-        groups = data.groupby('Category')
         fig = pl.figure()
-        groups.size().plot(kind='bar')
-        fig.subplots_adjust(bottom=0.35)
-        pl.savefig('plots/categories_outside_pd.pdf)
-        pl.show()
+        cols = ['b', 'g', 'r', 'm']
+        for col, (filename, label) in zip(cols, args):
+            data = sfc.get_data(filename)[indices]
+            data.Category = data.Category.map(lambda x: x.capitalize())
+            hist = data.groupby('Category').size()
+            hist = hist.map(lambda x: float(x)/hist.sum())
+            hist.plot(kind='bar', color=col, alpha=0.5, label=label)
+        fig.subplots_adjust(bottom=0.40)
+        locs, labels = pl.xticks()
+        #pl.setp(labels, rotation=20)
+        pl.legend()
+        pl.savefig('plots/categories_outside_pd.pdf')
+        pl.close(fig)
         return
 
 
@@ -119,8 +125,8 @@ def main(load=True):
 
 
 if __name__ == "__main__":
-    main(False)
+    #main(False)
     knn = Juristictions()
-    knn.plot('data/outside_pd.csv')
+    knn.plot(('data/outside_pd.csv', 'Outside PD'), ('data/all.csv', 'all'))
 
 ###############################################################################
