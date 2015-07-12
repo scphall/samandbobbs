@@ -13,7 +13,7 @@ function SFO-year () {
   then
     MONTHS=6
   fi
-  for MONTH in {1..$MONTHS};
+  for MONTH in $(seq 1 $MONTHS);
   do
     mkdir -p SFO/$YEAR/$MONTH
     for DAY in {1..31};
@@ -65,26 +65,35 @@ function SFO-cleanup () {
   rm -f SFO/*/*/*.bak
 }
 
-function midtown () {
-for YEAR in {2006..2014};
-do
-  for MONTH in {1..6};
+function SFM-year () {
+  if [ $# == 0 ];
+  then
+    echo "Get weather data for SF midtown from weather underground for a given year"
+    return 0
+  fi
+  YEAR=$1
+  MONTHS=12
+  if [ $YEAR == 2015 ];
+  then
+    MONTHS=6
+  fi
+  for MONTH in $(seq 1 $MONTHS);
   do
-    mkdir -p $YEAR/$MONTH
+    mkdir -p SFM/$YEAR/$MONTH
     for DAY in {1..31};
     do
-      FILE=$YEAR/$MONTH/$DAY.csv
+      FILE=SFM/$YEAR/$MONTH/$DAY.csv
       wget \
-        -O $FILE \
+        -q -O $FILE \
         "http://www.wunderground.com/weatherstation/WXDailyHistory.asp?ID=KCASANFR49&day=$DAY&month=$MONTH&year=$YEAR&graphspan=day&format=1"
       #if [ -f $FILE ];
       #then
         #sed -i.bak "s/<br \/>//" $FILE
-        #sed -i.bak "s<br>//" $FILE
+        #sed -i.bak "s/PST// ; s/PDT//" $FILE
       #fi
     done
   done
-done
+  rm -f SFM/$YEAR/*/*.bak
 }
 
 #midtown
