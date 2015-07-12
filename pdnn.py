@@ -84,6 +84,17 @@ class Juristictions(object):
         pl.close(fig)
         return data
 
+    def add_outside_juristiction(self, data):
+        data = copy.deepcopy(data)
+        xynames = ['X', 'Y']
+        prediction = pandas.Series(self.clf.predict(data[xynames]))
+        prob = pandas.Series(
+            [max(x) for x in self.clf.predict_proba(data[xynames])]
+        )
+        data['InPdDistrict'] = \
+            (data.PdDistrictInt == prediction) & (prob > 0.95)
+        return data
+
     def plot(self, *args):
         indices = ['Category']
         fig = pl.figure()
@@ -127,6 +138,10 @@ def main(load=True):
 if __name__ == "__main__":
     #main(False)
     knn = Juristictions()
-    knn.plot(('data/outside_pd.csv', 'Outside PD'), ('data/all.csv', 'all'))
+    knn.load()
+    #knn.plot(('data/outside_pd.csv', 'Outside PD'), ('data/all.csv', 'all'))
+    data = sfc.get_data('data/trim_1e4.csv')
+    all = knn.add_outside_juristiction(data)
+    sfc.write_data(all, 'data/trim_1e4.csv')
 
 ###############################################################################

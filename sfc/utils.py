@@ -1,6 +1,7 @@
 import os
 import zipfile
 import pandas
+from message import msg
 ###############################################################################
 
 '''
@@ -16,8 +17,8 @@ __author__ = [
 ]
 
 __all__ = [
-    'get_data', 'write_data', 'time2minutes', 'minutes2time', 'singleton',
-    'data2dict',
+    'get_data', 'write_data', 'time2minutes', 'minutes2time', 'data2dict',
+    'msg',
 ]
 
 ###############################################################################
@@ -25,6 +26,7 @@ __all__ = [
 
 def get_data(filename, drop_data=False):
     '''Get pandas.DataFrame from .csv or .csv.zip'''
+    msg('Reading datafile : {}'.format(filename))
     if not os.path.exists(filename):
         raise IOError('No filename: {}'.format(filename))
     if filename.endswith('.zip'):
@@ -40,6 +42,7 @@ def get_data(filename, drop_data=False):
         data = data[(data.X < -121) & (data.Y < 40)]
         data = data.dropna()
         data = data.reset_index(drop=True)
+    msg('Read datafile : {}'.format(filename), 2)
     return data
 
 
@@ -60,15 +63,6 @@ def time2minutes(time):
 def minutes2time(mins):
     '''int -> datetime.time'''
     return datetime.time(mins // 60, mins % 60)
-
-
-def singleton(cls):
-    instances = {}
-    def getinstance(*args, **kwargs):
-        if cls not in instances:
-            instances[cls] = cls(*args, **kwargs)
-        return instances[cls]
-    return getinstance
 
 
 def data2dict(df, cat_name, prefix=''):

@@ -7,3 +7,4 @@ San Fransisco Crime
 	- shade dark, dusk, dawn - maybe separate months for this
 * Moon phase?
 * Gang related crime
+* Make each morning belong to the previous day?

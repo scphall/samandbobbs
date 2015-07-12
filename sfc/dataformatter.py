@@ -1,5 +1,6 @@
 #!/usr/bin/python
 ###############################################################################
+from decorators import singleton
 from utils import *
 import astral
 import datetime
@@ -112,7 +113,9 @@ class DataFormat(object):
                                     'America/Los_Angeles', 16))
         # Time in minutes is better for playing with
         df['Minutes'] = df.Dates.map(lambda d: time2minutes(d))
+        df['Hour'] = df.Dates.map(lambda d: d.hour)
         df['Month'] = df.Dates.map(lambda d: d.month)
+        df['Day'] = df.Dates.map(lambda d: d.day)
         df['Year'] = df.Dates.map(lambda d: d.year)
         sunset = df.Dates.map(lambda d: time2minutes(location.sunset(d)))
         sunrise = df.Dates.map(lambda d: time2minutes(location.sunrise(d)))
