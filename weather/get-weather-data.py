@@ -1,11 +1,20 @@
+###############################################################################
 import threading
 import sys
 import subprocess
 import Queue
 import time
 import os
-
+###############################################################################
+'''
+Get all weather data from Weather Underground.
+Threading for speed.
+All bash functions is weather-func.sh
+'''
+###############################################################################
 exit_flag = False
+###############################################################################
+
 
 class GetWeatherThread(threading.Thread):
     def __init__(self, n, queue):
@@ -32,6 +41,7 @@ class GetWeatherThread(threading.Thread):
             else:
                 lock.release()
         return
+
 
 n_threads = 4
 threads = []

@@ -1,7 +1,14 @@
+###############################################################################
 import os
 import datetime
 import pandas
 from os.path import join
+###############################################################################
+'''
+Take data from wget data and make a nice csv of all data
+SFO is SF airport
+'''
+###############################################################################
 
 
 class WeatherDataAmalgamate(object):
@@ -73,6 +80,7 @@ class WeatherDataAmalgamate(object):
         return
 
 
+###############################################################################
 if __name__ == "__main__":
     w = WeatherDataAmalgamate()
     w.make_years_sfo()
