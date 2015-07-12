@@ -1,0 +1,49 @@
+#!/bin/bash
+
+
+for YEAR in {2003..2014}
+do
+  for MONTH in {1..12};
+  do
+    mkdir -p $YEAR/$MONTH
+    for DAY in {1..31};
+    do
+      FILE=$YEAR/$MONTH/$DAY.csv
+      wget \
+        -O $FILE \
+        "http://www.wunderground.com/history/airport/KSFO/$YEAR/$MONTH/$DAY/DailyHistory.html?req_city=San%20Francisco&req_statename=California&format=1"
+      if [ -f $FILE ];
+      then
+        sed -i.bak "s/<br \/>//" $FILE
+      fi
+    done
+  done
+done
+
+YEAR=2015
+for MONTH in {1..6};
+do
+  mkdir -p $YEAR/$MONTH
+  for DAY in {1..31};
+  do
+    FILE=$YEAR/$MONTH/$DAY.csv
+    wget \
+      -O $FILE \
+      "http://www.wunderground.com/history/airport/KSFO/$YEAR/$MONTH/$DAY/DailyHistory.html?req_city=San%20Francisco&req_statename=California&format=1"
+    if [ -f $FILE ];
+    then
+      sed -i.bak "s/<br \/>//" $FILE
+    fi
+  done
+done
+
+YEAR=2014
+MONTH=12
+DAY=31
+FILE=$YEAR/$MONTH/$DAY.csv
+wget \
+  -O $FILE \
+  "http://www.wunderground.com/history/airport/KSFO/$YEAR/$MONTH/$DAY/DailyHistory.html?req_city=San+Francisco&req_state=&req_statename=California&reqdb.zip=&reqdb.magic=&reqdb.wmo=&format=1"
+
+
+rm -fv */*/*.bak
