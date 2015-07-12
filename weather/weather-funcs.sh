@@ -25,6 +25,7 @@ function SFO-year () {
       if [ -f $FILE ];
       then
         sed -i.bak "s/<br \/>//" $FILE
+        sed -i.bak "s/PST// ; s/PDT//" $FILE
       fi
     done
   done
@@ -44,6 +45,7 @@ function SFO-cleanup () {
       if [ -f $FILE ];
       then
         sed -i.bak "s/<br \/>//" $FILE
+        sed -i.bak "s/PST// ; s/PDT//" $FILE
       fi
   done
 
@@ -57,6 +59,7 @@ function SFO-cleanup () {
       if [ -f $FILE ];
       then
         sed -i.bak "s/<br \/>//" $FILE
+        sed -i.bak "s/PST// ; s/PDT//" $FILE
       fi
   done
   rm -f SFO/*/*/*.bak

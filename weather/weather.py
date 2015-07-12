@@ -6,11 +6,7 @@ from os.path import join
 
 class WeatherDataAmalgamate(object):
     def __init__(self):
-        return
-
-    def _make_year_sfo(self, year):
-        year = str(year)
-        cols = [
+        self.cols = [
             'DateUTC',
             'Time',
             'TemperatureC',
@@ -20,6 +16,10 @@ class WeatherDataAmalgamate(object):
             'Events',
             'Conditions',
         ]
+        return
+
+    def _make_year_sfo(self, year):
+        year = str(year)
         path = 'SFO'
         data_year = pandas.DataFrame()
         months = [str(x) for x in range(1, 13)]
@@ -33,12 +33,13 @@ class WeatherDataAmalgamate(object):
                 if not os.path.exists(filename):
                     continue
                 print filename
-                data = pandas.read_csv(filename)
-                data['Time'] = data.TimePST if 'TimePST' in data.columns \
-                    else data.TimePDT
-                data = data[cols].set_index('DateUTC')
-                data_year = data_year.append(data)
-        data_year.to_csv(join('SFO', '{}.csv'.format(year)))
+                data = pandas.read_csv(filename, infer_datetime_format=True,
+                                       parse_dates=['DateUTC', 'Time'])
+                data.DateUTC = data.DateUTC.map(lambda x: x.date())
+                data.Time = data.Time.map(lambda x: x.time())
+                data_year = data_year.append(data, ignore_index=True)
+        data_year = data_year.reset_index(drop=True)
+        data_year.to_csv(join('SFO', '{}.csv'.format(year)), index=False)
         return
 
     def make_years_sfo(self):
@@ -47,12 +48,14 @@ class WeatherDataAmalgamate(object):
             self._make_year_sfo(year)
         return
 
-    def amalgamate_sfo(self)
-    data = pandas.DataFrame()
-    for year in years:
-        data = data.append(
-            pandas.read_csv('SFO/{}.csv'.format(year)).set_index('DateUTC')
-        )
+    def amalgamate_sfo(self):
+        data = pandas.DataFrame()
+        years = range(2003, 2016)
+        for year in years:
+            new = pandas.read_csv('SFO/{}.csv'.format(year))[self.cols]
+            new['DateTime'] = new.DateUTC + ' ' + new.Time
+            new.set_index('DateTime')
+            data = data.append(new)
         def wind_speed_convert(ws):
             if ws == 'Calm':
                 return '0'
@@ -61,36 +64,12 @@ class WeatherDataAmalgamate(object):
         data['WindSpeed'] = data['Wind SpeedKm/h'].map(wind_speed_convert)
         data['WindSpeed'] = data['WindSpeed'].astype(float)
         del data['Wind SpeedKm/h']
-        conditions_mapping = {
-            'Partly Cloudy',
-            'Scattered Clouds',
-            'Mostly Cloudy',
-            'Overcast',
-            'Clear',
-            'Patches of Fog',
-            'Fog',
-            'Haze',
-            'Light Rain',
-            'Rain',
-            'Drizzle',
-            'Heavy Rain',
-            'Thunderstorm',
-            'Heavy Thunderstorms and Rain',
-            'Smoke',
-            'Unknown',
-            'Mist',
-            'Thunderstorms and Rain',
-            'Light Drizzle',
-            'Light Thunderstorms and Rain',
-            'Thunderstorms with Small Hail',
-            'Light Ice Pellets',
-            'Squalls',
-            'Thunderstorms and Ice Pellets',
-            'Ice Pellets',
-            'Shallow Fog',
-            'Heavy Thunderstorms with Small Hail'
-        }
-        data.to_csv('SFO.csv')
+        del data['DateUTC']
+        del data['Time']
+        data = data.reset_index(drop=True)
+        #data = data.reindex(index=data.index[::-1])
+        data = data.drop_duplicates(subset='DateTime', take_last=False)
+        data.to_csv('SFO.csv', index=False)
         return
 
 
