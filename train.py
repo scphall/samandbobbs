@@ -15,9 +15,6 @@ def split(data):
     #train, test = cross_validation.train_test_split(data)
     return train, test
 
-def address_code(data):
-    pass
-
 def train_classifiers(data):
     train_vars = [
         'X', 'Y',
@@ -80,3 +77,4 @@ def train_classifiers(data):
 
 bdt = train_classifiers(sfc.get_data('data/all.csv'))
 test = sfc.get_data('data/test.csv')
+

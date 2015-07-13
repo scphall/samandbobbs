@@ -96,7 +96,7 @@ def make_test():
 
 if __name__ == "__main__":
     sfc.msg(1)
-    make_trimmed()
-    make_full()
+    #make_trimmed()
+    #make_full()
     make_test()
 ###############################################################################
