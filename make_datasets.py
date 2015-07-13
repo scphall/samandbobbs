@@ -71,7 +71,7 @@ def make_full():
     sfc.msg('Make full dataset')
     train = sfc.get_data('data/train.csv')
     # Formatting
-    train = formatter = sfc.DataFormat()
+    formatter = sfc.DataFormat()
     train = formatter.add_columns_enumerate(train)
     train = formatter.add_columns_time(train)
     train = formatter.add_weather(train)
