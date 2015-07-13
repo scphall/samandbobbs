@@ -10,6 +10,9 @@ import os
 Get all weather data from Weather Underground.
 Threading for speed.
 All bash functions is weather-func.sh
+
+SFO is airport data
+SFM is midtown data, which is rubbish
 '''
 ###############################################################################
 exit_flag = False
@@ -29,15 +32,21 @@ class GetWeatherThread(threading.Thread):
         while not exit_flag:
             lock.acquire()
             if not self.q.empty():
-                year = self.q.get()
-                print 'Starting thread {}, on year {}'.format(self.n, year)
+                station, year = self.q.get()
+                print 'Starting thread {}, on {} year {}'.format(
+                    self.n, station,  year
+                )
                 lock.release()
                 process = subprocess.Popen([
                     'bash', '-c',
-                    'source weather-funcs.sh && SFO-year {}'.format(year)
+                    'source weather-funcs.sh && {}-year {}'.format(
+                        station, year
+                    )
                 ])
                 process.wait()
-                print 'Stopping thread {}, on year {}'.format(self.n, year)
+                print 'Stopping thread {}, on {} year {}'.format(
+                    self.n, station, year
+                )
             else:
                 lock.release()
         return
@@ -55,7 +64,9 @@ for n in range(n_threads):
 
 lock.acquire()
 for year in range(2003, 2016):
-    queue.put(year)
+    queue.put(('SFO', year))
+#for year in range(2006, 2016):
+    #queue.put(('SFM', year))
 lock.release()
 
 while not queue.empty():

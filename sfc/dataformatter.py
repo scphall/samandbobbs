@@ -4,6 +4,7 @@ from decorators import singleton
 from utils import *
 import astral
 import datetime
+import os
 import pandas
 import re
 ###############################################################################
@@ -84,7 +85,7 @@ class DataFormat(object):
                 #re.sub(re_string, '', x).replace('Block of ', 'BO').split('/')
             #]
         #)
-        return
+        return df
 
     def add_columns_resolution(self, df):
         '''Adding enumerations of resolutions to pandas.DataFile'''
@@ -102,7 +103,7 @@ class DataFormat(object):
             (df.Resolution == 'PROSECUTED BY OUTSIDE AGENCY') |
             (df.Resolution == 'PROSECUTED FOR LESSER OFFENSE')
         ).astype(int)
-        return
+        return df
 
     def add_columns_time(self, df):
         '''Add columns about the time.
@@ -131,7 +132,38 @@ class DataFormat(object):
         df['Sunrise'] = sunrise
         df['Dusk'] = dusk
         df['Dawn'] = dawn
-        return
+        return df
+
+    def add_weather(self, df, weatherfile=None):
+        if weatherfile is None:
+            weatherfile = 'weather/SFO.csv'
+        finger = 0
+        if not os.path.exists(weatherfile):
+            print 'Weather file {} does not exist'
+            print ' - Weather data not added'
+            return df
+        weather = pandas.read_csv(
+            weatherfile,
+            infer_datetime_format=True,
+            parse_dates=['DateTime']
+        )
+        # make both ascending in date
+        weather = weather.sort('DateTime', ascending=True)
+        weather = weather.reset_index(drop=True)
+        df = df.reindex(index=df.index[::-1])
+        df = df.reset_index(drop=True)
+        new_cols = {k: [None] * len(df) for k in weather.columns}
+        for i, date in enumerate(df.Dates):
+            # Move finger to the nearest weather datetime index
+            while abs(weather.DateTime[finger] - date) > abs(weather.DateTime[finger + 1] - date):
+                finger += 1
+            for k in weather.columns:
+                new_cols[k][i] = weather[k][finger]
+        df = df.join(pandas.DataFrame(new_cols))
+        df.reindex(index=df.index[::-1])
+        print df.columns
+        return df.reset_index(drop=True)
+
 
     def details(self, df):
         '''Unused'''
@@ -149,11 +181,12 @@ class DataFormat(object):
 
 
 if __name__ == "__main__":
-    data = get_data('data/train_1e4.csv')
+    data = get_data('data/trim_1e4.csv')
     formatter = DataFormat()
-    formatter.add_columns_enumerate(data)
-    formatter.add_columns_resolution(data)
-    formatter.add_columns_time(data)
+    #formatter.add_columns_enumerate(data)
+    #formatter.add_columns_resolution(data)
+    #formatter.add_columns_time(data)
+    data = formatter.add_weather(data)
     write_data(data, 'data.csv')
 
 ###############################################################################

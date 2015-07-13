@@ -1,5 +1,7 @@
 from decorators import singleton
 
+__all__ = ['msg']
+
 
 @singleton
 class Message(object):

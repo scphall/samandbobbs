@@ -8,7 +8,8 @@ import pandas
 ###############################################################################
 
 
-def make_dataset(input, output, comment='', verbose=False, size=None):
+def make_dataset(input, output, comment='', size=None):
+    sfc.msg('making {}'.format(output))
     data = None
     # Get the input data
     if isinstance(input, str):
@@ -45,13 +46,14 @@ def trim_categories(df):
 
 
 def make_trimmed():
+    sfc.msg('Make trimmed datasets')
     train = sfc.get_data('data/train.csv')
     trimmed = trim_categories(train)
     # Formatting
     formatter = sfc.DataFormat()
-    formatter.add_columns_enumerate(trimmed)
-    #formatter.add_columns_resolution(trimmed) # Almost certainly not used
-    formatter.add_columns_time(trimmed)
+    trimmed = formatter.add_columns_enumerate(trimmed)
+    trimmed = formatter.add_columns_time(trimmed)
+    trimmed = formatter.add_weather(trimmed)
     # Make the actual datasets
     make_dataset(trimmed, 'data/trim_1e4.csv', size=10000,
                  comment='Random set of training data. ' \
@@ -59,9 +61,6 @@ def make_trimmed():
     make_dataset(trimmed, 'data/trim_1e5.csv', size=100000,
                  comment='Random set of training data. ' \
                  'Selected Categories, 1e5 records')
-    make_dataset(trimmed, 'data/trim_1e6.csv', size=1000000,
-                 comment='Random set of training data. ' \
-                 'Selected Categories, 1e6 records')
     make_dataset(trimmed, 'data/trim.csv',
                  comment='Random set of training data. ' \
                  'Selected Categories, all records')
@@ -69,17 +68,20 @@ def make_trimmed():
 
 
 def make_full():
+    sfc.msg('Make full dataset')
     train = sfc.get_data('data/train.csv')
     # Formatting
-    formatter = sfc.DataFormat()
-    formatter.add_columns_enumerate(train)
-    formatter.add_columns_time(train)
+    train = formatter = sfc.DataFormat()
+    train = formatter.add_columns_enumerate(train)
+    train = formatter.add_columns_time(train)
+    train = formatter.add_weather(train)
     make_dataset(train, 'data/all.csv',
                  comment='All training data')
     return
 
 
 if __name__ == "__main__":
+    sfc.msg(1)
     make_trimmed()
-    #make_full()
+    make_full()
 ###############################################################################
