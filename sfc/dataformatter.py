@@ -161,7 +161,6 @@ class DataFormat(object):
                 new_cols[k][i] = weather[k][finger]
         df = df.join(pandas.DataFrame(new_cols))
         df.reindex(index=df.index[::-1])
-        print df.columns
         return df.reset_index(drop=True)
 
 
