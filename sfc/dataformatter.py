@@ -2,6 +2,7 @@
 ###############################################################################
 from decorators import singleton
 from utils import *
+from addresscode import AddressCode
 import astral
 import datetime
 import os
@@ -75,16 +76,12 @@ class DataFormat(object):
         '''Adding enumerations to DataFile'''
         if self.verbose:
             print __doc__
-        df['CategoryInt'] = df.Category.map(self.category2int)
+        if 'Category' in df.columns:
+            df['CategoryInt'] = df.Category.map(self.category2int)
+        ac = AddressCode()
         df['DayOfWeekInt'] = df.DayOfWeek.map(self.day2int)
         df['PdDistrictInt'] = df.PdDistrict.map(self.pddistrict2int)
-        #re_string = ' ST| AV| BL| WY'
-        #df['AddressCode'] = df.Address.map(
-            #lambda x: [
-                #y.strip() for y in
-                #re.sub(re_string, '', x).replace('Block of ', 'BO').split('/')
-            #]
-        #)
+        df['AddressCode'] = df.Address.map(ac)
         return df
 
     def add_columns_resolution(self, df):

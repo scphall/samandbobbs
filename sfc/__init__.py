@@ -17,5 +17,6 @@ __author__ = [
 from utils import *
 from message import *
 from dataformatter import DataFormat
+from addresscode import AddressCode
 ###############################################################################
 _SEED = 31966

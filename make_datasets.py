@@ -80,8 +80,23 @@ def make_full():
     return
 
 
+def make_test():
+    sfc.msg('Make test dataset')
+    test = sfc.get_data('data/test.csv')
+    # Formatting
+    formatter = sfc.DataFormat()
+    test = formatter.add_columns_enumerate(test)
+    test = formatter.add_columns_time(test)
+    test = formatter.add_weather(test)
+    make_dataset(test, 'data/test_format.csv',
+                 comment='Formatted test data')
+    test = test.sort('Id', ascending=True).reset_index(drop=True)
+    return test
+
+
 if __name__ == "__main__":
     sfc.msg(1)
     make_trimmed()
     make_full()
+    make_test()
 ###############################################################################

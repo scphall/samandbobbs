@@ -140,8 +140,8 @@ if __name__ == "__main__":
     knn = Juristictions()
     knn.load()
     #knn.plot(('data/outside_pd.csv', 'Outside PD'), ('data/all.csv', 'all'))
-    data = sfc.get_data('data/trim_1e4.csv')
+    data = sfc.get_data('data/all.csv')
     all = knn.add_outside_juristiction(data)
-    sfc.write_data(all, 'data/trim_1e4.csv')
+    sfc.write_data(all, 'data/all.csv')
 
 ###############################################################################
