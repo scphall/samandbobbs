@@ -58,12 +58,12 @@ def make_trimmed():
     make_dataset(trimmed, 'data/trim_1e4.csv', size=10000,
                  comment='Random set of training data. ' \
                  'Selected Categories, 1e4 records')
-    make_dataset(trimmed, 'data/trim_1e5.csv', size=100000,
-                 comment='Random set of training data. ' \
-                 'Selected Categories, 1e5 records')
-    make_dataset(trimmed, 'data/trim.csv',
-                 comment='Random set of training data. ' \
-                 'Selected Categories, all records')
+    #make_dataset(trimmed, 'data/trim_1e5.csv', size=100000,
+                 #comment='Random set of training data. ' \
+                 #'Selected Categories, 1e5 records')
+    #make_dataset(trimmed, 'data/trim.csv',
+                 #comment='Random set of training data. ' \
+                 #'Selected Categories, all records')
     return
 
 
@@ -96,7 +96,7 @@ def make_test():
 
 if __name__ == "__main__":
     sfc.msg(1)
-    #make_trimmed()
+    make_trimmed()
     #make_full()
     make_test()
 ###############################################################################
