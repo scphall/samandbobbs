@@ -116,14 +116,14 @@ def sort_categories_by_frequency(cats):
 
 ###############################################################################
 
-#if __name__ == "__main__":
-    #df = sfc.get_data('data/trim_1e5.csv', drop_data=True)
-    #cats = sfc.data2dict(df, 'Category')
+if __name__ == "__main__":
+    df = sfc.get_data('data/trim_1e5.csv', drop_data=True)
+    cats = sfc.data2dict(df, 'Category')
     #pds = sfc.data2dict(df, 'PdDistrict')
     #plotter = Plot2D()
     #plotter.plot(cats)
-    #plotter.plot_scatter(pds, 'PDs')
-    #pds_theft = {k:v[v.Category=='VEHICLE THEFT'] for k, v in pds.iteritems()}
-    #plotter.plot_scatter(pds_theft, 'PDs_VehicleTheft')
+    plotter.plot_scatter(pds, 'PDs')
+    pds_theft = {k:v[v.Category=='VEHICLE THEFT'] for k, v in pds.iteritems()}
+    plotter.plot_scatter(pds_theft, 'PDs_VehicleTheft')
 
 ###############################################################################

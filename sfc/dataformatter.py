@@ -132,8 +132,13 @@ class DataFormat(object):
         return df
 
     def add_weather(self, df, weatherfile=None):
+        '''Add weather data to each entry, the weather data comes from SF
+        airport, and is the closest in date.
+        '''
         if weatherfile is None:
+            # Not very flexible
             weatherfile = 'weather/SFO.csv'
+        # Since both datasets are ordered, can just increment the weather finger
         finger = 0
         if not os.path.exists(weatherfile):
             print 'Weather file {} does not exist'
